@@ -2,6 +2,8 @@ package pfa.dev.authservice.sevice;
 
 
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.OAuth2Constants;
@@ -18,6 +20,7 @@ import pfa.dev.authservice.dto.SignupRequest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +53,25 @@ public class KeycloakAdminService {
         response.setRefreshToken(keycloakUser.tokenManager().getAccessToken().getRefreshToken());
         response.setExpiresIn(expiresIn);
 
-        // fermer la connexion Keycloak
+        try {
+            SignedJWT jwt = SignedJWT.parse(accessToken);
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+
+            // username
+            response.setUsername(claims.getStringClaim("preferred_username"));
+
+            // roles
+            Map<String, Object> realmAccess =
+                    (Map<String, Object>) claims.getClaim("realm_access");
+
+            if (realmAccess != null) {
+                response.setRoles((List<String>) realmAccess.get("roles"));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error decoding token", e);
+        }
+
         keycloakUser.close();
 
         return response;
