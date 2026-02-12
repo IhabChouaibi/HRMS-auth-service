@@ -31,16 +31,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
-                .cors(
-                        (cors) ->
-                                cors.configurationSource(
-                                        request -> {
-                                            CorsConfiguration corsConfiguration = new CorsConfiguration();
-                                            corsConfiguration.setAllowedMethods(List.of("*"));
-                                            corsConfiguration.setAllowedHeaders(List.of("*"));
-                                            corsConfiguration.setAllowCredentials(true);
-                                            return corsConfiguration;
-                                        }))
+
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS ))
                 .csrf(csrf-> csrf.disable())
                 .authorizeHttpRequests(ar -> ar
