@@ -3,6 +3,8 @@ package pfa.dev.authservice.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -10,28 +12,28 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
 @EnableWebSecurity
-
 public class SecurityConfig {
     private JwtAuthConverter jwtAuthConverter;
 
-     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-     private String uri;
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String uri;
     public SecurityConfig(JwtAuthConverter jwtAuthConverter) {
         this.jwtAuthConverter = jwtAuthConverter;
     }
 
     @Bean
-      
+
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
-
+                .cors(cors -> cors.disable())
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS ))
                 .csrf(csrf-> csrf.disable())
                 .authorizeHttpRequests(ar -> ar
@@ -41,11 +43,11 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                        .decoder(jwtDecoder())
-                        .jwtAuthenticationConverter(jwtAuthConverter)
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthConverter)
+                        )
                 )
-        )
                 .build();
     }
 
@@ -53,5 +55,4 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder(){
         return JwtDecoders.fromOidcIssuerLocation(uri);
     }
-
 }
