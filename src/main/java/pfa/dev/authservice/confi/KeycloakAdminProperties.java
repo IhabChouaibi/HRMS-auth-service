@@ -28,4 +28,16 @@ public class KeycloakAdminProperties {
     private String clientId;
     private String clientSecret;
 
+    public String getTokenUri() {
+        return serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+    }
+
+    public String getLogoutUri() {
+        return serverUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
+    }
+
+    public boolean hasClientSecret() {
+        return clientSecret != null && !clientSecret.isBlank();
+    }
+
 }
