@@ -26,12 +26,19 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Check Java version
+        run: |
+          java -version
+          javac -version
+
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
+
       - name: Test code
         run: ./mvnw test -Dspring.profiles.active=test
+
       - name: Build JAR
         run: ./mvnw clean package -DskipTests
 
       - name: Build Docker image
-        run: docker build -t spring-boot-app:latest .
+        run: docker build -t auth-service:latest .
