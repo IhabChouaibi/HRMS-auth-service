@@ -28,10 +28,8 @@ jobs:
 
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
-
       - name: Test code
-        run: ./mvnw test
-
+        run: ./mvnw test -Dspring.profiles.active=test
       - name: Build JAR
         run: ./mvnw clean package -DskipTests
 
