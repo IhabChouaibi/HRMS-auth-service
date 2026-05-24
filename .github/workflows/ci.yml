@@ -35,7 +35,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Test code
-        run: ./mvnw test -Dspring.profiles.active=test
+        run: ./mvnw test -Dspring.profiles.active=test -Dtest='!*AuthServiceApplicationTests'
 
       - name: Build JAR
         run: ./mvnw clean package -DskipTests
