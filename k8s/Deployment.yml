@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: ihab0/auth-service:latest
+          image: ihab0/auth-service:dev
           ports:
             - containerPort: 8092
