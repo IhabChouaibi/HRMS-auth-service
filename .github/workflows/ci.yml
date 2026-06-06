@@ -1,62 +1,59 @@
-name: Test and Build Docker Image
+name: CI-CD
 
 on:
   push:
     branches:
       - main
-      - master
 
-  pull_request:
-    branches:
-      - main
-      - master
-permissions:
-  contents: read
-  packages: write
+env:
+  IMAGE_NAME: ihab0/auth-service
 
 jobs:
-  test-and-build-image:
+
+  build:
+
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+
     steps:
-      - name: Checkout code
+
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: 21
           cache: maven
 
-      - name: Check Java version
+
+      - name: Build
+        run: mvn clean package -DskipTests
+
+      - name: Generate Version
+        id: version
         run: |
-          java -version
-          javac -version
+          VERSION=1.0.${GITHUB_RUN_NUMBER}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
-
-      - name: Test code
-        run: ./mvnw test -Dspring.profiles.active=test -Dtest='!*AuthServiceApplicationTests'
-
-      - name: Build JAR
-        run: ./mvnw clean package
-
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GHCR
+      - name: Docker Login
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push image
-        uses: docker/build-push-action@v5
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
         with:
-          context: .
           push: true
-          tags: ghcr.io/ihabchouaibi/hrms-auth-service:${{ github.sha }}
+          tags: |
+            ihab0/auth-service:${{ steps.version.outputs.VERSION }}
+            ihab0/auth-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
